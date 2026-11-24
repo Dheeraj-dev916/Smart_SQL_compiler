@@ -1,0 +1,34 @@
+/* Light, calm palette for the AI Studio page. Scoped to .ai-light so the rest of the app is untouched,
+   and it stays light even when the app theme is dark. */
+.ai-light {
+  --background: 210 40% 98%;
+  --foreground: 222 35% 16%;
+  --panel: 0 0% 100%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 35% 16%;
+  --muted: 214 32% 95%;
+  --muted-foreground: 218 16% 40%;
+  --border: 214 24% 88%;
+  --input: 214 22% 80%;
+  --primary: 221 76% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 214 100% 96%;
+  --secondary-foreground: 221 70% 38%;
+  --accent: 262 80% 96%;
+  --accent-foreground: 262 50% 40%;
+  --destructive: 0 70% 44%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 152 62% 28%;
+  --warning: 30 90% 36%;
+  --ring: 221 76% 52%;
+  --cyan: 192 85% 32%;
+  --violet: 262 60% 52%;
+  --indigo: 239 62% 52%;
+  color-scheme: light;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+.ai-light ::selection { background: hsl(var(--primary) / 0.2); }
+.ai-light textarea,
+.ai-light input,
+.ai-light select { background-color: hsl(0 0% 100%); color: hsl(var(--foreground)); }

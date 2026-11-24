@@ -1,0 +1,34 @@
+/* Visual polish only (no logic). All sidebar items share ONE accent colour (cyan) on hover and when active. */
+nav[aria-label="Main"] a {
+  --nav-c: var(--cyan); /* one accent colour (cyan) for every item, theme-aware */
+  position: relative;
+  border-radius: 10px;
+  transition: background-color .18s ease, color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+nav[aria-label="Main"] a svg { transition: color .18s ease, transform .18s ease; }
+
+nav[aria-label="Main"] a:hover {
+  background-color: hsl(var(--nav-c) / .12);
+  color: hsl(var(--nav-c));
+  transform: translateX(2px);
+}
+nav[aria-label="Main"] a:hover svg { color: hsl(var(--nav-c)); transform: scale(1.12); }
+
+nav[aria-label="Main"] a[aria-current="page"] {
+  background-color: hsl(var(--nav-c) / .16);
+  color: hsl(var(--nav-c));
+  box-shadow: inset 3px 0 0 0 hsl(var(--nav-c));
+}
+nav[aria-label="Main"] a[aria-current="page"] svg { color: hsl(var(--nav-c)); }
+nav[aria-label="Main"] a:focus-visible { outline: 2px solid hsl(var(--nav-c)); outline-offset: 2px; }
+
+
+/* Buttons: gentle lift on hover, press effect on click. Colours stay as each button's own variant. */
+button:not(:disabled), [role="button"]:not([aria-disabled="true"]) { transition: transform .15s ease, box-shadow .15s ease, filter .15s ease, background-color .15s ease; }
+main button:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 4px 12px -4px hsl(215 25% 20% / .25); filter: brightness(1.04); }
+main button:not(:disabled):active { transform: translateY(0); box-shadow: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  nav[aria-label="Main"] a, nav[aria-label="Main"] a svg, button { transition: none !important; transform: none !important; }
+}

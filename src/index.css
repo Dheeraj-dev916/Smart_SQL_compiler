@@ -1,0 +1,84 @@
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 30% 97%;
+    --foreground: 224 40% 12%;
+    --panel: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 40% 12%;
+    --muted: 220 24% 93%;
+    --muted-foreground: 222 16% 38%;
+    --border: 220 20% 86%;
+    --input: 220 20% 80%;
+    --primary: 192 91% 30%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 238 70% 94%;
+    --secondary-foreground: 240 55% 38%;
+    --accent: 262 70% 95%;
+    --accent-foreground: 262 55% 38%;
+    --destructive: 0 72% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 70% 28%;
+    --warning: 32 90% 34%;
+    --ring: 192 91% 36%;
+    --cyan: 192 91% 32%;
+    --violet: 262 70% 50%;
+    --indigo: 239 70% 52%;
+    color-scheme: light;
+  }
+  .dark {
+    --background: 224 42% 7%;
+    --foreground: 214 32% 93%;
+    --panel: 224 36% 10%;
+    --card: 224 32% 12%;
+    --card-foreground: 214 32% 93%;
+    --muted: 224 28% 16%;
+    --muted-foreground: 218 16% 66%;
+    --border: 224 24% 21%;
+    --input: 224 24% 24%;
+    --primary: 188 86% 53%;
+    --primary-foreground: 224 50% 8%;
+    --secondary: 239 50% 22%;
+    --secondary-foreground: 233 90% 84%;
+    --accent: 262 40% 24%;
+    --accent-foreground: 262 90% 85%;
+    --destructive: 0 80% 62%;
+    --destructive-foreground: 224 50% 8%;
+    --success: 152 62% 52%;
+    --warning: 38 92% 58%;
+    --ring: 188 86% 53%;
+    --cyan: 188 86% 53%;
+    --violet: 262 83% 70%;
+    --indigo: 239 84% 72%;
+    color-scheme: dark;
+  }
+  * { @apply border-border; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    overflow-x: hidden;
+  }
+  code, pre, kbd, .font-mono { font-family: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+  :focus-visible { @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background; }
+  ::selection { background: hsl(var(--cyan) / 0.3); }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+}
+
+@layer components {
+  .dot-grid {
+    background-image: radial-gradient(hsl(var(--foreground) / 0.07) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .scroll-thin { scrollbar-width: thin; scrollbar-color: hsl(var(--border)) transparent; }
+  .cm-editor { height: 100%; }
+  .cm-editor.cm-focused { outline: none; }
+  .tree-line { border-left: 1px solid hsl(var(--border)); }
+}
