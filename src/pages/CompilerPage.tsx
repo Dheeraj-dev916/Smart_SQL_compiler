@@ -6,6 +6,7 @@ import { EditorToolbar } from '@/components/editor/EditorToolbar';
 import { PipelineView } from '@/components/compiler/PipelineView';
 import { ResultsWorkspace } from '@/components/compiler/ResultsWorkspace';
 import { SchemaExplorer } from '@/components/schema/SchemaExplorer';
+import { ImportDatasetDialog } from '@/components/schema/ImportDatasetDialog';
 import { EXAMPLES } from '@/data/examples';
 import { useApp } from '@/hooks/useApp';
 import { buildJsonReport, buildMarkdownReport } from '@/services/report';
@@ -13,9 +14,10 @@ import { copyText, downloadText } from '@/utils/download';
 import { formatSql } from '@/utils/format';
 
 export default function CompilerPage() {
-  const { sql, setSql, result, compiling, compileNow, settings, highlight, resetEditor } = useApp();
+  const { sql, setSql, result, compiling, compileNow, settings, highlight, resetEditor, activeSchema, customDataset, resetDataset } = useApp();
   const { toast } = useToast();
   const editor = React.useRef<SqlEditorHandle>(null);
+  const [importOpen, setImportOpen] = React.useState(false);
 
   const diagnostics = React.useMemo(() => (result && result.source === sql ? result.diagnostics : []), [result, sql]);
   const desktopSchema = typeof window !== 'undefined' && window.matchMedia?.('(min-width: 1024px)').matches;
@@ -96,9 +98,26 @@ export default function CompilerPage() {
             <span>{sql.length} chars · {sql === '' ? 0 : sql.split('\n').length} lines · PostgreSQL dialect</span>
           </div>
         </Card>
-        <SchemaExplorer defaultOpen={Boolean(desktopSchema)} onInsert={(text) => editor.current?.insertText(text)} />
+        <SchemaExplorer
+          schema={activeSchema}
+          isCustom={Boolean(customDataset)}
+          onImportClick={() => setImportOpen(true)}
+          onResetClick={() => {
+            resetDataset();
+            toast({ kind: 'info', title: 'Restored demo dataset', description: 'Using students, courses, and enrollments.' });
+          }}
+          defaultOpen={Boolean(desktopSchema)}
+          onInsert={(text) => editor.current?.insertText(text)}
+        />
       </div>
       <ResultsWorkspace />
+      <ImportDatasetDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onImported={(tables) => {
+          if (tables[0]) setSql(`SELECT * FROM ${tables[0].name} LIMIT 20;`);
+        }}
+      />
     </div>
   );
 }

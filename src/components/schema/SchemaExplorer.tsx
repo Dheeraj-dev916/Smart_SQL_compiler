@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ChevronRight, Database, Key, Link2, Plus, Table2 } from 'lucide-react';
+import { ChevronRight, Database, Key, Link2, Plus, RotateCcw, Table2, Upload } from 'lucide-react';
 import type { ColumnMeta, SchemaMeta } from '@/types/compiler';
 import { ACADEMIC_SCHEMA } from '@/compiler/semantic/schema';
 import { Badge } from '@/components/ui/badge';
@@ -29,9 +29,26 @@ function ColumnRow({ col, onInsert }: { col: ColumnMeta; onInsert: (text: string
 }
 
 /** Reads the same schema object the semantic analyzer validates against. */
-export function SchemaExplorer({ schema = ACADEMIC_SCHEMA, onInsert, defaultOpen = true }: { schema?: SchemaMeta; onInsert: (text: string) => void; defaultOpen?: boolean }) {
+export function SchemaExplorer({
+  schema = ACADEMIC_SCHEMA,
+  onInsert,
+  defaultOpen = true,
+  isCustom = false,
+  onImportClick,
+  onResetClick,
+}: {
+  schema?: SchemaMeta;
+  onInsert: (text: string) => void;
+  defaultOpen?: boolean;
+  isCustom?: boolean;
+  onImportClick?: () => void;
+  onResetClick?: () => void;
+}) {
   const [open, setOpen] = React.useState(defaultOpen);
   const [expanded, setExpanded] = React.useState<Set<string>>(() => new Set([schema.tables[0]?.name]));
+  React.useEffect(() => {
+    setExpanded(new Set([schema.tables[0]?.name]));
+  }, [schema]);
   const toggle = (name: string) =>
     setExpanded((s) => {
       const n = new Set(s);
@@ -41,17 +58,44 @@ export function SchemaExplorer({ schema = ACADEMIC_SCHEMA, onInsert, defaultOpen
     });
   return (
     <section aria-label="Database schema explorer" className="flex h-full min-h-0 flex-col rounded-lg border bg-card shadow-sm">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="flex items-center gap-2 border-b px-3 py-2.5 text-left"
-      >
-        <Database className="size-4 text-cyan-brand" aria-hidden="true" />
-        <span className="text-sm font-semibold">Schema</span>
-        <span className="font-mono text-xs text-muted-foreground">{schema.name}</span>
-        <ChevronRight className={cn('ml-auto size-4 text-muted-foreground transition-transform', open && 'rotate-90')} aria-hidden="true" />
-      </button>
+      <div className="flex items-center border-b">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="flex min-w-0 flex-1 items-center gap-2 px-3 py-2.5 text-left"
+        >
+          <Database className="size-4 shrink-0 text-cyan-brand" aria-hidden="true" />
+          <span className="text-sm font-semibold">Schema</span>
+          <span className="truncate font-mono text-xs text-muted-foreground">{schema.name}</span>
+          <ChevronRight className={cn('ml-auto size-4 shrink-0 text-muted-foreground transition-transform', open && 'rotate-90')} aria-hidden="true" />
+        </button>
+        {onImportClick && (
+          <Tip label="Import CSV / JSON dataset" side="left">
+            <button
+              type="button"
+              onClick={onImportClick}
+              aria-label="Import dataset"
+              className="mr-1 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-cyan-brand hover:bg-muted"
+            >
+              <Upload className="size-3.5" aria-hidden="true" />
+              Import
+            </button>
+          </Tip>
+        )}
+        {isCustom && onResetClick && (
+          <Tip label="Reset to demo dataset" side="left">
+            <button
+              type="button"
+              onClick={onResetClick}
+              aria-label="Reset dataset"
+              className="mr-2 flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <RotateCcw className="size-3.5" aria-hidden="true" />
+            </button>
+          </Tip>
+        )}
+      </div>
       {open && (
         <div className="relative min-h-0 flex-1">
           <div className="scroll-thin max-h-[22rem] overflow-y-auto p-2 lg:absolute lg:inset-0 lg:max-h-none">

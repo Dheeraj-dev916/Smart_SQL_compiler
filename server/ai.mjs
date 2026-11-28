@@ -277,7 +277,7 @@ export function aiConfig(env = process.env) {
 // "express mode" keys ("AQ....") use Vertex AI. Both take the same request body, so we try the likely
 // endpoint first and fall back to the other one when Google says the key does not belong there.
 // If the default model name is not found (HTTP 404) we also try a few current model names.
-const GOOGLE_MODEL_FALLBACKS = ['gemini-flash-latest', 'gemini-2.0-flash', 'gemini-2.5-flash-lite'];
+const GOOGLE_MODEL_FALLBACKS = ['gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest'];
 
 function googleEndpoints(cfg) {
   const geminiBase = (process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/, '');
@@ -347,8 +347,10 @@ async function callGoogle(prompt, cfg, signal, trace = []) {
         }
         const reason = await googleReason(res, cfg.key);
         const isWrongKeyEndpoint = [400, 401, 403].includes(res.status);
-        if (last.status === 0 || !BUSY.has(last.status) || !isWrongKeyEndpoint) {
-          last = { status: res.status, reason, ep: ep.name, model };
+        if (last.status === 0 || !BUSY.has(last.status) || BUSY.has(res.status)) {
+          if (!BUSY.has(last.status) || !isWrongKeyEndpoint) {
+            last = { status: res.status, reason, ep: ep.name, model };
+          }
         }
         trace.push({ endpoint: ep.name, model, status: res.status, reason });
         console.error(`[ai] google ${ep.name} model=${model} -> HTTP ${res.status}${reason ? `: ${reason}` : ''}`);

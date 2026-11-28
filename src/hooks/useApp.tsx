@@ -1,10 +1,11 @@
 import * as React from 'react';
-import type { CompilationResult, StageId, StageState } from '@/types/compiler';
+import type { CompilationResult, SchemaMeta, StageId, StageState } from '@/types/compiler';
 import { compileWithProgress } from '@/compiler';
 import { useToast } from '@/components/ui/toast';
 import { createLocalStore, createSupabaseStore, entryFromResult, type HistoryEntry, type HistoryStore } from '@/services/history';
 import { isSupabaseConfigured } from '@/services/supabase';
 import { runInSandbox, type ExecutionResult } from '@/services/execution';
+import { DATASET_KEY, datasetToSchema, mergeDatasetTables, type CustomDataset, type DatasetTable } from '@/services/dataset';
 import {
   DRAFT_KEY, applyTheme, loadProfile, loadSettings, saveProfile, saveSettings, type Profile, type Settings,
 } from '@/services/settings';
@@ -50,6 +51,10 @@ interface AppState {
   execution: ExecutionState;
   runExecution: (sql: string) => Promise<void>;
   resetEditor: () => void;
+  customDataset: CustomDataset | null;
+  activeSchema: SchemaMeta;
+  importDataset: (tables: DatasetTable[], mode: 'add' | 'replace') => void;
+  resetDataset: () => void;
 }
 
 const AppContext = React.createContext<AppState | null>(null);
@@ -75,6 +80,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = React.useState<Settings>(loadSettings);
   const [profile, setProfile] = React.useState<Profile>(loadProfile);
   const [execution, setExecution] = React.useState<ExecutionState>({ status: 'idle' });
+  const [customDataset, setCustomDataset] = React.useState<CustomDataset | null>(() => {
+    const saved = readJson<CustomDataset | null>(DATASET_KEY, null);
+    return saved && Array.isArray(saved.tables) && saved.tables.length > 0 ? saved : null;
+  });
+  const activeSchema = React.useMemo(() => datasetToSchema(customDataset), [customDataset]);
 
   // history
   const storeRef = React.useRef<HistoryStore>(createLocalStore());
@@ -134,6 +144,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   settingsRef.current = settings;
   const sqlRef = React.useRef(sql);
   sqlRef.current = sql;
+  const schemaRef = React.useRef(activeSchema);
+  schemaRef.current = activeSchema;
+  const datasetRef = React.useRef(customDataset);
+  datasetRef.current = customDataset;
 
   const compileNow = React.useCallback<AppState['compileNow']>(async (override, opts) => {
     if (compilingRef.current) return null;
@@ -145,7 +159,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setCompiling(true);
     setSelectedStage(null);
     try {
-      const r = await compileWithProgress(source, { stageDelayMs: settingsRef.current.animate ? 130 : 0, onStages: setLiveStages });
+      const r = await compileWithProgress(source, {
+        schema: schemaRef.current,
+        stageDelayMs: settingsRef.current.animate ? 130 : 0,
+        onStages: setLiveStages,
+      });
       setResult(r);
       if (!r.success) setTab('diagnostics');
       else if (opts?.tab) setTab(opts.tab);
@@ -198,15 +216,35 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const runExecution = React.useCallback(async (s: string) => {
     const id = ++execReqRef.current;
     setExecution({ status: 'running', sql: s });
-    const r = await runInSandbox(s);
+    const r = await runInSandbox(s, datasetRef.current);
     if (execReqRef.current !== id) return;
     setExecution({ status: 'done', sql: s, result: r });
+  }, []);
+
+  const importDataset = React.useCallback((tables: DatasetTable[], mode: 'add' | 'replace') => {
+    setCustomDataset((prev) => {
+      const next = mergeDatasetTables(prev, tables, mode);
+      if (!writeJson(DATASET_KEY, next)) {
+        toast({ kind: 'warning', title: 'Dataset too large for browser storage', description: 'It is active for this session, but may not persist on reload.' });
+      }
+      return next;
+    });
+    setExecution({ status: 'idle' });
+    setResult(null);
+  }, [toast]);
+
+  const resetDataset = React.useCallback(() => {
+    setCustomDataset(null);
+    try { window.localStorage.removeItem(DATASET_KEY); } catch { /* ignore */ }
+    setExecution({ status: 'idle' });
+    setResult(null);
   }, []);
 
   const value: AppState = {
     sql, setSql, result, liveStages, compiling, compileNow, tab, setTab, selectedStage, setSelectedStage,
     highlight, highlightRange, history, historyMode, historyNote, historyLoading, removeHistory, clearHistory,
     settings, updateSettings, profile, updateProfile, execution, runExecution, resetEditor,
+    customDataset, activeSchema, importDataset, resetDataset,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

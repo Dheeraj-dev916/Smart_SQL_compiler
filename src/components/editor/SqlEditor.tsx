@@ -71,8 +71,14 @@ export const SqlEditor = React.forwardRef<SqlEditorHandle, Props>(function SqlEd
         ]),
       ),
       EditorView.theme({
-        '&': { height: '100%', fontSize: `${fontSize}px` },
-        '.cm-scroller': { fontFamily: "'JetBrains Mono Variable','JetBrains Mono',ui-monospace,monospace", lineHeight: '1.6' },
+        '&': { height: '100%', maxHeight: '100%', fontSize: `${fontSize}px` },
+        '.cm-scroller': {
+          overflow: 'auto',
+          fontFamily: "'JetBrains Mono Variable','JetBrains Mono',ui-monospace,monospace",
+          lineHeight: '1.6',
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'hsl(var(--border)) transparent',
+        },
         '.cm-content': { padding: '8px 0' },
         '.cm-gutters': { border: 'none', color: 'hsl(var(--muted-foreground))' },
         '.cm-tooltip': { border: '1px solid hsl(var(--border))', backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--card-foreground))', borderRadius: '6px' },
@@ -120,6 +126,7 @@ export const SqlEditor = React.forwardRef<SqlEditorHandle, Props>(function SqlEd
     <div className={cn('h-full min-h-0 overflow-hidden', className)} data-testid="sql-editor">
       <CodeMirror
         ref={cm}
+        className="h-full"
         value={value}
         onChange={onChange}
         theme={isDark ? dark : light}

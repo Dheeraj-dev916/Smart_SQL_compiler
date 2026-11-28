@@ -8,7 +8,7 @@ import { registerAiRoutes } from './ai.mjs';
 export function createApp(distDir) {
   const app = express();
   app.disable('x-powered-by');
-  app.use(express.json({ limit: '16kb' }));
+  app.use(express.json({ limit: '10mb' }));
 
   // Tiny in-memory rate limiter: 40 executions per minute per client.
   const hits = new Map();
@@ -32,7 +32,7 @@ export function createApp(distDir) {
   });
 
   app.post('/api/execute', limiter, async (req, res) => {
-    const out = await executeSelect(req.body?.sql);
+    const out = await executeSelect(req.body?.sql, { dataset: req.body?.dataset });
     const { status, ...body } = out;
     res.status(status).json(body);
   });

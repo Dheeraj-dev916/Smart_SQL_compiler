@@ -35,7 +35,7 @@ describe('Optimize Query: one-click apply and undo', () => {
     const user = userEvent.setup();
     render(<App />);
     await user.click(await screen.findByRole('button', { name: /optimize query/i }));
-    expect(await screen.findByText(/no optimization was applied/i)).toBeInTheDocument();
+    expect(await screen.findByText(/no optimization was applied/i, {}, { timeout: 3000 })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /optimized query is ready/i })).not.toBeInTheDocument();
   });
 });

@@ -1,3 +1,5 @@
+import type { CustomDataset } from './dataset';
+
 export interface ExecutionSuccess {
   ok: true;
   columns: string[];
@@ -15,9 +17,13 @@ export interface ExecutionFailure {
 export type ExecutionResult = ExecutionSuccess | ExecutionFailure;
 
 /** Sends the SQL to the server-side sandbox. The server validates it again; nothing runs in the browser. */
-export async function runInSandbox(sql: string): Promise<ExecutionResult> {
+export async function runInSandbox(sql: string, dataset?: CustomDataset | null): Promise<ExecutionResult> {
   try {
-    const res = await fetch('/api/execute', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sql }) });
+    const res = await fetch('/api/execute', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(dataset ? { sql, dataset } : { sql }),
+    });
     const type = res.headers.get('content-type') ?? '';
     if (!type.includes('application/json')) {
       return { ok: false, unavailable: true, error: 'The sandbox API is not running. Start it with "npm run server" (see README).' };
